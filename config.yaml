@@ -1,0 +1,65 @@
+# Gin-Vue-Admin Global Configuration
+
+
+# zap logger configuration
+zap:
+  level: 'info'
+  format: 'console'
+  prefix: '[gorm-demo]'
+  director: 'log'
+  link-name: 'latest_log'
+  show-line: true
+  encode-level: 'LowercaseColorLevelEncoder'
+  stacktrace-key: 'stacktrace'
+  log-in-console: true
+
+
+
+
+# system configuration
+system:
+  env: 'public'  # Change to "develop" to skip authentication for development mode
+  addr: 3306
+  db-type: 'mysql'
+
+
+# mysql connect configuration
+mysql:
+  path: '127.0.0.1:3306'
+  config: 'charset=utf8mb4&parseTime=True&loc=Local'
+  db-name: 'test_db'
+  username: 'root'
+  password: '123456789'
+  max-idle-conns: 10
+  max-open-conns: 10
+  log-mode: true
+
+# sqlite connect configuration (sqlite需要gcc支持 windows用户需要自行安装gcc)
+sqlite:
+  path: 'db.db'
+  max-idle-conns: 10
+  max-open-conns: 10
+  logger: true
+
+# Sqlserver connect configuration
+sqlserver:
+  path: 'localhost:9930'
+  db-name: 'gorm'
+  username: 'gorm'
+  password: '123456789'
+  max-idle-conns: 10
+  max-open-conns: 10
+  logger: true
+
+# Postgresql connect configuration
+postgresql:
+  host: '127.0.0.1'
+  port: '9920'
+  config: 'sslmode=disable TimeZone=Asia/Shanghai'
+  db-name: 'test_db'
+  username: 'root'
+  password: '12345678'
+  max-idle-conns: 10
+  max-open-conns: 10
+  prefer-simple-protocol: true
+  logger: false
