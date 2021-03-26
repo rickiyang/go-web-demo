@@ -1,33 +1,50 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"gorm-demo/dao"
-	"gorm-demo/initialize"
-	"gorm-demo/model"
+	_ "github.com/spf13/viper/remote"
+	"gorm-demo/init_pkg"
+	"gorm-demo/routers"
+	"net/http"
+	"time"
 )
 
 func main() {
-	initialize.Gorm()
-	insertTest()
-}
+	init_pkg.Gorm()
+	gin.SetMode(gin.DebugMode)
 
-func insertTest() {
-	user := model.User{
-		Name:  "发森",
-		Age:   12,
-		Sex:   0,
-		Phone: "13321234564",
+	routersInit := routers.InitRouter()
+	s := &http.Server{
+		Addr:           ":8080",
+		Handler:        routersInit,
+		ReadTimeout:    10 * time.Second,
+		WriteTimeout:   10 * time.Second,
+		MaxHeaderBytes: 1 << 20,
 	}
-	//user1 := model.User{
-	//	Name:  "凤岗",
-	//	Age:   33,
-	//	Sex:   0,
-	//	Phone: "13214325689",
-	//}
-	//users :=  []model.User{user, user1}
-	//
-	//dao.BatchInsert(users)
-	dao.InsertOne(user)
+	s.ListenAndServe()
 
 }
+
+//
+//func main() {
+//	router := gin.Default()
+//
+//	​
+//	//  group: v1
+//	v1 := router.Group("/v1")
+//	{
+//		v1.POST("/login", v1Login)
+//		v1.POST("/submit", v1Submit)
+//		v1.POST("/add", v1Add)
+//	}
+//	​
+//	// group: v2
+//	v2 := router.Group("/v2")
+//	{
+//		v2.POST("/login", v2Login)
+//		v2.POST("/submit", v2Submit)
+//		v2.POST("/add", v2Add)
+//	}
+//	router.Run(":8080")
+//}

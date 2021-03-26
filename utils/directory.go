@@ -2,7 +2,7 @@ package utils
 
 import (
 	"go.uber.org/zap"
-	"gorm-demo/constants"
+	"gorm-demo/config"
 	"os"
 )
 
@@ -36,10 +36,10 @@ func CreateDir(dirs ...string) (err error) {
 			return err
 		}
 		if !exist {
-			constants.GVA_LOG.Debug("create directory" + v)
+			config.GVA_LOG.Debug("create directory" + v)
 			err = os.MkdirAll(v, os.ModePerm)
 			if err != nil {
-				constants.GVA_LOG.Error("create directory"+v, zap.Any(" error:", err))
+				config.GVA_LOG.Error("create directory"+v, zap.Any(" error:", err))
 			}
 		}
 	}

@@ -1,11 +1,11 @@
-package core
+package first
 
 import (
 	"flag"
 	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
-	"gorm-demo/constants"
+	"gorm-demo/config"
 	"gorm-demo/utils"
 	"os"
 )
@@ -37,12 +37,12 @@ func init() {
 
 	v.OnConfigChange(func(e fsnotify.Event) {
 		fmt.Println("configCon file changed:", e.Name)
-		if err := v.Unmarshal(&constants.GVA_CONFIG); err != nil {
+		if err := v.Unmarshal(&config.GVA_CONFIG); err != nil {
 			fmt.Println(err)
 		}
 	})
-	if err := v.Unmarshal(&constants.GVA_CONFIG); err != nil {
+	if err := v.Unmarshal(&config.GVA_CONFIG); err != nil {
 		fmt.Println(err)
 	}
-	constants.GVA_VP = v
+	config.GVA_VP = v
 }

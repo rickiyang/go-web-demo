@@ -1,10 +1,10 @@
-package initialize
+package init_pkg
 
 import (
 	"go.uber.org/zap"
-	"gorm-demo/constants"
-	_ "gorm-demo/core"
-	"gorm-demo/model"
+	"gorm-demo/config"
+	_ "gorm-demo/init_pkg/first"
+	"gorm-demo/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlserver"
@@ -14,11 +14,9 @@ import (
 	"os"
 )
 
-var err error
-
 // Gorm 初始化数据库并产生数据库全局变量
 func Gorm() {
-	switch constants.GVA_CONFIG.System.DbType {
+	switch config.GVA_CONFIG.System.DbType {
 	case "mysql":
 		GormMysql()
 	case "postgresql":
@@ -32,9 +30,11 @@ func Gorm() {
 	}
 }
 
+var err error
+
 // Gorm Mysql 初始化Mysql数据库
 func GormMysql() {
-	m := constants.GVA_CONFIG.Mysql
+	m := config.GVA_CONFIG.Mysql
 	dsn := m.Username + ":" + m.Password + "@tcp(" + m.Path + ")/" + m.Dbname + "?" + m.Config
 	mysqlConfig := mysql.Config{
 		DSN:                       dsn,   // DSN data source name
@@ -45,12 +45,12 @@ func GormMysql() {
 		SkipInitializeWithVersion: false, // 根据版本自动配置
 	}
 	gormConfig := logConfig(m.LogMode)
-	if constants.GVA_DB, err = gorm.Open(mysql.New(mysqlConfig), gormConfig); err != nil {
-		constants.GVA_LOG.Error("MySQL start fail", zap.Any("err", err))
+	if config.GVA_DB, err = gorm.Open(mysql.New(mysqlConfig), gormConfig); err != nil {
+		config.GVA_LOG.Error("MySQL start fail", zap.Any("err", err))
 		os.Exit(0)
 	} else {
-		GormDBTables(constants.GVA_DB)
-		sqlDB, _ := constants.GVA_DB.DB()
+		GormDBTables(config.GVA_DB)
+		sqlDB, _ := config.GVA_DB.DB()
 		sqlDB.SetMaxIdleConns(m.MaxIdleConns)
 		sqlDB.SetMaxOpenConns(m.MaxOpenConns)
 	}
@@ -58,19 +58,19 @@ func GormMysql() {
 
 // GormPostgreSql 初始化PostgreSql数据库
 func GormPostgreSql() {
-	p := constants.GVA_CONFIG.Postgresql
+	p := config.GVA_CONFIG.Postgresql
 	dsn := "host=" + p.Host + " user=" + p.Username + " password=" + p.Password + " dbname=" + p.Dbname + " port=" + p.Port + " " + p.Config
 	postgresConfig := postgres.Config{
 		DSN:                  dsn,                    // DSN data source name
 		PreferSimpleProtocol: p.PreferSimpleProtocol, // 禁用隐式 prepared statement
 	}
 	gormConfig := logConfig(p.Logger)
-	if constants.GVA_DB, err = gorm.Open(postgres.New(postgresConfig), gormConfig); err != nil {
-		constants.GVA_LOG.Error("PostgreSql启动异常", zap.Any("err", err))
+	if config.GVA_DB, err = gorm.Open(postgres.New(postgresConfig), gormConfig); err != nil {
+		config.GVA_LOG.Error("PostgreSql启动异常", zap.Any("err", err))
 		os.Exit(0)
 	} else {
-		GormDBTables(constants.GVA_DB)
-		sqlDB, _ := constants.GVA_DB.DB()
+		GormDBTables(config.GVA_DB)
+		sqlDB, _ := config.GVA_DB.DB()
 		sqlDB.SetMaxIdleConns(p.MaxIdleConns)
 		sqlDB.SetMaxOpenConns(p.MaxOpenConns)
 	}
@@ -92,14 +92,14 @@ func GormPostgreSql() {
 
 // GormSqlServer 初始化SqlServer数据库
 func GormSqlServer() {
-	ss := constants.GVA_CONFIG.Sqlserver
+	ss := config.GVA_CONFIG.Sqlserver
 	dsn := "sqlserver://" + ss.Username + ":" + ss.Password + "@" + ss.Path + "?database=" + ss.Dbname
-	if constants.GVA_DB, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{}); err != nil {
-		constants.GVA_LOG.Error("SqlServer start fail", zap.Any("err", err))
+	if config.GVA_DB, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{}); err != nil {
+		config.GVA_LOG.Error("SqlServer start fail", zap.Any("err", err))
 		os.Exit(0)
 	} else {
-		GormDBTables(constants.GVA_DB)
-		sqlDB, _ := constants.GVA_DB.DB()
+		GormDBTables(config.GVA_DB)
+		sqlDB, _ := config.GVA_DB.DB()
 		sqlDB.SetMaxIdleConns(ss.MaxIdleConns)
 		sqlDB.SetMaxOpenConns(ss.MaxOpenConns)
 	}
@@ -133,11 +133,11 @@ func logConfig(mod bool) (c *gorm.Config) {
 // GormDBTables 注册数据库表专用
 func GormDBTables(db *gorm.DB) {
 	err := db.AutoMigrate(
-		model.User{},
+		models.User{},
 	)
 	if err != nil {
-		constants.GVA_LOG.Error("register table failed", zap.Any("err", err))
+		config.GVA_LOG.Error("register table failed", zap.Any("err", err))
 		os.Exit(0)
 	}
-	constants.GVA_LOG.Info("register table success")
+	config.GVA_LOG.Info("register table success")
 }
