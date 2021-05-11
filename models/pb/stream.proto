@@ -1,0 +1,33 @@
+syntax = "proto3"; // 版本声明，使用Protocol Buffers v3版本
+option go_package = "/";
+
+package models.pb; // 包名
+
+
+service BaseService {
+
+    //计算求和的方式来测试服务端流
+    rpc Sum (stream SumRequest) returns (SumResponse) {}
+    // 服务端流式响应
+    rpc ServerStream (StreamRequest) returns (stream StreamResponse){}
+    // 客户端流式请求
+    rpc ClientStream (stream StreamRequest) returns (StreamResponse){}
+    // 双向流式
+    rpc Streaming (stream StreamRequest) returns (stream StreamResponse){}
+}
+
+message StreamRequest{
+    string input = 1;
+}
+
+message StreamResponse{
+    string output = 1;
+}
+
+message SumRequest {
+    int64 num = 1;
+}
+
+message SumResponse {
+    int64 result = 1;
+}
