@@ -1,20 +1,28 @@
 package normal
 
 import (
+	"context"
 	"fmt"
-	"net"
-	"testing"
-
-	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	pb "gorm-demo/models/pb"
+	"net"
+	"testing"
 )
 
 type server struct{}
 
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
+}
+
+//拦截器 - 打印日志
+func LoggingInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler) (interface{}, error) {
+	fmt.Printf("gRPC method: %s, %v", info.FullMethod, req)
+	resp, err := handler(ctx, req)
+	fmt.Printf("gRPC method: %s, %v", info.FullMethod, resp)
+	return resp, err
 }
 
 func TestGrpcServer(t *testing.T) {
@@ -24,8 +32,9 @@ func TestGrpcServer(t *testing.T) {
 		fmt.Printf("failed to listen: %v", err)
 		return
 	}
-	s := grpc.NewServer()                  // 创建gRPC服务器
-	pb.RegisterGreeterServer(s, &server{}) // 在gRPC服务端注册服务
+	//注册拦截器
+	s := grpc.NewServer(grpc.UnaryInterceptor(LoggingInterceptor)) // 创建gRPC服务器
+	pb.RegisterGreeterServer(s, &server{})                         // 在gRPC服务端注册服务
 
 	reflection.Register(s) //在给定的gRPC服务器上注册服务器反射服务
 	// Serve方法在lis上接受传入连接，为每个连接创建一个ServerTransport和server的goroutine。
@@ -35,4 +44,5 @@ func TestGrpcServer(t *testing.T) {
 		fmt.Printf("failed to serve: %v", err)
 		return
 	}
+
 }

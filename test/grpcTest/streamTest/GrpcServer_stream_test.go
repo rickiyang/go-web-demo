@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 	"testing"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -21,8 +22,8 @@ func TestGrpcServer(t *testing.T) {
 		fmt.Printf("failed to listen: %v", err)
 		return
 	}
-	s := grpc.NewServer()                      // 创建gRPC服务器
-	pb.RegisterBaseServiceServer(s, &server{}) // 在gRPC服务端注册服务
+	s := grpc.NewServer(grpc.StreamInterceptor(SendMsgCheckStreamServerInterceptor)) // 创建gRPC服务器
+	pb.RegisterBaseServiceServer(s, &server{})                                       // 在gRPC服务端注册服务
 
 	reflection.Register(s) //在给定的gRPC服务器上注册服务器反射服务
 	// Serve方法在lis上接受传入连接，为每个连接创建一个ServerTransport和server的goroutine。
@@ -32,6 +33,42 @@ func TestGrpcServer(t *testing.T) {
 		fmt.Printf("failed to serve: %v", err)
 		return
 	}
+}
+
+type wrappedStream struct {
+	grpc.ServerStream
+}
+
+func newWrappedStream(s grpc.ServerStream) grpc.ServerStream {
+	return &wrappedStream{s}
+}
+
+func (w *wrappedStream) RecvMsg(m interface{}) error {
+	fmt.Printf("Receive a message (Type: %T) at %s", m, time.Now().Format(time.RFC3339))
+	return w.ServerStream.RecvMsg(m)
+}
+
+func (w *wrappedStream) SendMsg(m interface{}) error {
+	fmt.Printf("Send a message (Type: %T) at %v", m, time.Now().Format(time.RFC3339))
+	return w.ServerStream.SendMsg(m)
+}
+
+//发消息前后流式调用拦截器
+func SendMsgCheckStreamServerInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo,
+	handler grpc.StreamHandler) error {
+	fmt.Printf("gRPC method: %s,", info.FullMethod)
+	err := handler(srv, newWrappedStream(ss))
+	fmt.Printf("gRPC method: %s", info.FullMethod)
+	return err
+}
+
+//普通前置流式调用拦截器
+func StreamServerInterceptor(srv interface{}, ss grpc.ServerStream, info *grpc.StreamServerInfo,
+	handler grpc.StreamHandler) error {
+	fmt.Printf("gRPC method: %s,", info.FullMethod)
+	err := handler(srv, ss)
+	fmt.Printf("gRPC method: %s", info.FullMethod)
+	return err
 }
 
 //sum案例--客户端流式处理
