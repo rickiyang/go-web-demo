@@ -1,0 +1,24 @@
+syntax = "proto3";
+option go_package = "/";
+
+package test.grpcTest.tokenTls;
+
+
+service TokenService {
+  rpc Login (LoginRequest) returns (LoginResp) {}
+  rpc SayHello(PingMessage) returns (PingMessage) {}
+}
+
+message LoginRequest{
+  string username = 1;
+  string password = 2;
+}
+message LoginResp{
+  string status = 1;
+  string token = 2;
+}
+
+
+message PingMessage {
+  string greeting = 1;
+}
