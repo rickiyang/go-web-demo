@@ -26,9 +26,6 @@ func LoggingInterceptor(ctx context.Context, req interface{}, info *grpc.UnarySe
 // 定义helloService并实现约定的接口
 type helloService struct{}
 
-// HelloService ...
-var HelloService = helloService{}
-
 // SayHello 实现Hello服务接口
 func (h helloService) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
 	// 解析metadata中的信息并验证

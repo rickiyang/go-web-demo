@@ -10,26 +10,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-// customCredential 自定义认证
-type customCredential struct{}
-
-// GetRequestMetadata 实现自定义认证接口
-func (c customCredential) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
-	if ctx.Value("authorization") == nil {
-		return map[string]string{
-			"authorization": "123456",
-		}, nil
-	}
-	return map[string]string{
-		"authorization": ctx.Value("authorization").(string),
-	}, nil
-}
-
-// RequireTransportSecurity 自定义认证是否开启TLS
-func (c customCredential) RequireTransportSecurity() bool {
-	return true
-}
-
 func TestGrpcClient(t *testing.T) {
 	var err error
 	var opts []grpc.DialOption
