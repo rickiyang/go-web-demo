@@ -8,11 +8,13 @@ import (
 	pb "gorm-demo/models/pb"
 	"net"
 	"testing"
+	"time"
 )
 
 type server struct{}
 
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
+	time.Sleep(3 * time.Second)
 	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
 }
 
