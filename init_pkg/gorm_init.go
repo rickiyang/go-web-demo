@@ -6,8 +6,6 @@ import (
 	_ "gorm-demo/init_pkg/first"
 	"gorm-demo/models"
 	"gorm.io/driver/mysql"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
@@ -16,18 +14,7 @@ import (
 
 // Gorm 初始化数据库并产生数据库全局变量
 func Gorm() {
-	switch config.GVA_CONFIG.System.DbType {
-	case "mysql":
-		GormMysql()
-	case "postgresql":
-		GormPostgreSql()
-	//case "sqlite": // sqlite需要gcc支持 windows用户需要自行安装gcc 如需使用打开注释即可
-	//	GormSqlite()
-	case "sqlserver":
-		GormSqlServer()
-	default:
-		GormMysql()
-	}
+	GormMysql()
 }
 
 var err error
@@ -53,55 +40,6 @@ func GormMysql() {
 		sqlDB, _ := config.GVA_DB.DB()
 		sqlDB.SetMaxIdleConns(m.MaxIdleConns)
 		sqlDB.SetMaxOpenConns(m.MaxOpenConns)
-	}
-}
-
-// GormPostgreSql 初始化PostgreSql数据库
-func GormPostgreSql() {
-	p := config.GVA_CONFIG.Postgresql
-	dsn := "host=" + p.Host + " user=" + p.Username + " password=" + p.Password + " dbname=" + p.Dbname + " port=" + p.Port + " " + p.Config
-	postgresConfig := postgres.Config{
-		DSN:                  dsn,                    // DSN data source name
-		PreferSimpleProtocol: p.PreferSimpleProtocol, // 禁用隐式 prepared statement
-	}
-	gormConfig := logConfig(p.Logger)
-	if config.GVA_DB, err = gorm.Open(postgres.New(postgresConfig), gormConfig); err != nil {
-		config.GVA_LOG.Error("PostgreSql启动异常", zap.Any("err", err))
-		os.Exit(0)
-	} else {
-		GormDBTables(config.GVA_DB)
-		sqlDB, _ := config.GVA_DB.DB()
-		sqlDB.SetMaxIdleConns(p.MaxIdleConns)
-		sqlDB.SetMaxOpenConns(p.MaxOpenConns)
-	}
-}
-
-// GormSqlite 初始化Sqlite数据库 sqlite需要gcc支持 windows用户需要自行安装gcc 如需使用打开注释即可
-//func GormSqlite() {
-//	s := global.GVA_CONFIG.Sqlite
-//	gormConfig := logConfig(s.Logger)
-//	if global.GVA_DB, err = gorm.Open(sqlite.Open(s.Path), gormConfig); err != nil {
-//		global.GVA_LOG.Error("Sqlite启动异常", zap.Any("err", err))
-//		os.Exit(0)
-//	} else {
-//		sqlDB, _ := global.GVA_DB.DB()
-//		sqlDB.SetMaxIdleConns(s.MaxIdleConns)
-//		sqlDB.SetMaxOpenConns(s.MaxOpenConns)
-//	}
-//}
-
-// GormSqlServer 初始化SqlServer数据库
-func GormSqlServer() {
-	ss := config.GVA_CONFIG.Sqlserver
-	dsn := "sqlserver://" + ss.Username + ":" + ss.Password + "@" + ss.Path + "?database=" + ss.Dbname
-	if config.GVA_DB, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{}); err != nil {
-		config.GVA_LOG.Error("SqlServer start fail", zap.Any("err", err))
-		os.Exit(0)
-	} else {
-		GormDBTables(config.GVA_DB)
-		sqlDB, _ := config.GVA_DB.DB()
-		sqlDB.SetMaxIdleConns(ss.MaxIdleConns)
-		sqlDB.SetMaxOpenConns(ss.MaxOpenConns)
 	}
 }
 

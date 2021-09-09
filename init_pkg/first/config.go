@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"gorm-demo/config"
 	"gorm-demo/utils"
+	"log"
 	"os"
 )
 
@@ -19,13 +20,11 @@ func init() {
 	if configCon == "" {
 		if configEnv := os.Getenv(utils.ConfigEnv); configEnv == "" {
 			configCon = utils.ConfigFile
-			fmt.Printf("您正在使用config的默认值,config的路径为%v\n", utils.ConfigFile)
+			log.Printf("use local config, path=%v", utils.ConfigFile)
 		} else {
 			configCon = configEnv
-			fmt.Printf("您正在使用GVA_CONFIG环境变量,config的路径为%v\n", configCon)
+			log.Printf("use remote config, path=%v", configCon)
 		}
-	} else {
-		fmt.Printf("您正在使用命令行的-c参数传递的值,config的路径为%v\n", configCon)
 	}
 	v := viper.New()
 	v.SetConfigFile(configCon)

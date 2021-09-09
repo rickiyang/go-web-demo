@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	globalConfig "gorm-demo/config"
 	"gorm-demo/utils"
+	"log"
 	"os"
 	"time"
 )
@@ -18,12 +19,14 @@ var (
 )
 
 func init() {
-	if ok, _ := utils.PathExists(globalConfig.GVA_CONFIG.Zap.Director); !ok { // 判断是否有Director文件夹
-		fmt.Printf("create %v directory\n", globalConfig.GVA_CONFIG.Zap.Director)
+	// 判断是否有Director文件夹
+	if ok, _ := utils.PathExists(globalConfig.GVA_CONFIG.Zap.Director); !ok {
+		log.Printf("create %v directory\n", globalConfig.GVA_CONFIG.Zap.Director)
 		_ = os.Mkdir(globalConfig.GVA_CONFIG.Zap.Director, os.ModePerm)
 	}
 
-	switch globalConfig.GVA_CONFIG.Zap.Level { // 初始化配置文件的Level
+	// 初始化配置文件的Level
+	switch globalConfig.GVA_CONFIG.Zap.Level {
 	case "debug":
 		level = zap.DebugLevel
 	case "info":
@@ -113,7 +116,7 @@ func getEncoderCore() (core zapcore.Core) {
 	return zapcore.NewCore(getEncoder(), writer, level)
 }
 
-// 自定义日志输出时间格式
+// CustomTimeEncoder 自定义日志输出时间格式
 func CustomTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(t.Format(globalConfig.GVA_CONFIG.Zap.Prefix + "2006/01/02 - 15:04:05.000"))
 }
